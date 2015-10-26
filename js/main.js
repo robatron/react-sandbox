@@ -5,11 +5,23 @@ var $        = require('jquery');
 var React    = require('react');
 var ReactDOM = require('react-dom');
 
+const FILTERS = [ 'all', 'active', 'done' ];
+
+// Top bar ---------------------------------------------------------------------
+
 var TopBar = React.createClass({
     render: function () {
+        var handleChange = (event) => {
+            this.props.items.forEach((item, itemIdx) => {
+                this.props.completeItem(itemIdx);
+            });
+        };
         return (
             <div>
-                <input type="checkbox" />
+                <input
+                    type="checkbox"
+                    defaultChecked={false}
+                    onChange={handleChange} />
                 <input type="input" placeholder="What needs to be done?"/>
             </div>
         )
@@ -25,7 +37,7 @@ var ItemList = React.createClass({
                 <li key={idx}>
                     <input
                         type="checkbox"
-                        defaultChecked={item.done}
+                        checked={item.done}
                         onChange={() => this.props.toggleItem(idx)} />
                     <span>{item.text}</span>
                 </li>
@@ -54,11 +66,16 @@ var Info = React.createClass({
 
 var Filters = React.createClass({
     render: function () {
+        var filterButtonNodes = _.map(FILTERS, (filter, idx) => (
+            <button
+                style={this.props.filter === filter ? {color: 'red'} : {color: 'black'}}
+                onClick={() => this.props.setFilter(filter)}>
+                {filter}
+            </button>
+        ) );
         return (
             <span>
-                <button>All</button>
-                <button>Active</button>
-                <button>Completed</button>
+                {filterButtonNodes}
             </span>
         )
     }
@@ -69,8 +86,13 @@ var BottomBar = React.createClass({
         return (
             <div>
                 <Info items={this.props.items} />
-                <Filters />
-                <button>Clear completed</button>
+                <Filters
+                    filter={this.props.filter}
+                    setFilter={this.props.setFilter} />
+                <button
+                    style={_.filter(this.props.items, item => item.done).length > 0 ? {display: 'block'} : {display: 'none'}}>
+                    Clear completed
+                </button>
             </div>
         )
     }
@@ -81,7 +103,7 @@ var BottomBar = React.createClass({
 var TodoApp = React.createClass({
     getInitialState: () => {
         return {
-            filter: 'all', // all, active, completed
+            filter: 'all',
             items: [
                 {
                     done: true,
@@ -94,20 +116,39 @@ var TodoApp = React.createClass({
             ]
         };
     },
+    setFilter: function (filter) {
+        this.setState({filter: filter});
+    },
     toggleItem: function (itemIdx) {
         var nextItems = this.state.items;
         nextItems[itemIdx].done = !this.state.items[itemIdx].done;
+        this.setState({items: nextItems});
+    },
+    completeItem: function (itemIdx) {
+        var nextItems = this.state.items;
+        nextItems[itemIdx].done = true;
+        this.setState({items: nextItems});
+    },
+    addItem: function (text) {
+        var nextItems = this.state.items;
+        nextItems.push({done: false, text: text});
         this.setState({items: nextItems});
     },
     render: function () {
         return (
             <div>
                 <h1>Todo App</h1>
-                <TopBar />
+                <TopBar
+                    items={this.state.items}
+                    addItem={this.addItem}
+                    completeItem={this.completeItem} />
                 <ItemList
                     items={this.state.items}
                     toggleItem={this.toggleItem} />
-                <BottomBar items={this.state.items} />
+                <BottomBar
+                    items={this.state.items}
+                    filter={this.state.filter}
+                    setFilter={this.setFilter} />
             </div>
         )
     }
