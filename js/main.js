@@ -9,27 +9,33 @@ const FILTERS = [ 'all', 'active', 'done' ];
 
 // Top bar ---------------------------------------------------------------------
 
-var TopBar = React.createClass({
-    render: function () {
-        var handleChange = event => {
-            this.props.items.forEach((item, itemIdx) => {
-                if ( event.target.checked ) {
-                    return this.props.completeItem(itemIdx);
-                }
-                return this.props.activateItem(itemIdx);
-            });
-        };
-        var handleSubmit = event => {
-            event.preventDefault();
-            this.props.addItem(this.refs.newItemBox.value);
-            this.refs.newItemBox.value = null;
-        };
+class TopBar extends React.Component {
+    handleSelectAll (event) {
+        this.props.items.forEach((item, itemIdx) => {
+            if ( event.target.checked ) {
+                return this.props.completeItem(itemIdx);
+            }
+            return this.props.activateItem(itemIdx);
+        });
+    }
+
+    handleSubmit (event) {
+        event.preventDefault();
+        var newItemText = this.refs.newItemBox.value.trim();
+        if (!newItemText) {
+            return;
+        }
+        this.props.addItem(newItemText);
+        this.refs.newItemBox.value = null;
+    }
+
+    render () {
         return (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={this.handleSubmit}>
                 <input
                     type="checkbox"
                     defaultChecked={false}
-                    onChange={handleChange} />
+                    onChange={this.handleSelectAll} />
                 <input
                     type="input"
                     placeholder="What needs to be done?"
@@ -37,7 +43,7 @@ var TopBar = React.createClass({
             </form>
         )
     }
-});
+}
 
 // Items -----------------------------------------------------------------------
 
@@ -103,6 +109,18 @@ var Filters = React.createClass({
     }
 });
 
+var ClearCompletedButton = React.createClass({
+    render: function () {
+        var areCompletedItems = !!_.filter(this.props.items, item => item.done).length;
+        return (
+            <button
+                className={areCompletedItems ? '' : 'hidden'}>
+                Clear completed
+            </button>
+        );
+    }
+});
+
 var BottomBar = React.createClass({
     render: function () {
         return (
@@ -111,10 +129,8 @@ var BottomBar = React.createClass({
                 <Filters
                     filter={this.props.filter}
                     setFilter={this.props.setFilter} />
-                <button
-                    style={_.filter(this.props.items, item => item.done).length > 0 ? {display: 'block'} : {display: 'none'}}>
-                    Clear completed
-                </button>
+                <ClearCompletedButton
+                    items={this.props.items} />
             </div>
         )
     }
@@ -177,7 +193,8 @@ var TodoApp = React.createClass({
                 <BottomBar
                     items={this.state.items}
                     filter={this.state.filter}
-                    setFilter={this.setFilter} />
+                    setFilter={this.setFilter}
+                    removeItem={this.removeItem} />
             </div>
         )
     }
