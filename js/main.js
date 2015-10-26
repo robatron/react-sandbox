@@ -14,10 +14,9 @@ var TopBar = React.createClass({
         var handleChange = event => {
             this.props.items.forEach((item, itemIdx) => {
                 if ( event.target.checked ) {
-                    this.props.completeItem(itemIdx);
-                } else {
-                    this.props.activateItem(itemIdx);
+                    return this.props.completeItem(itemIdx);
                 }
+                return this.props.activateItem(itemIdx);
             });
         };
         return (
@@ -72,6 +71,7 @@ var Filters = React.createClass({
     render: function () {
         var filterButtonNodes = _.map(FILTERS, (filter, idx) => (
             <button
+                key={idx}
                 style={this.props.filter === filter ? {color: 'red'} : {color: 'black'}}
                 onClick={() => this.props.setFilter(filter)}>
                 {filter}
