@@ -11,9 +11,13 @@ const FILTERS = [ 'all', 'active', 'done' ];
 
 var TopBar = React.createClass({
     render: function () {
-        var handleChange = (event) => {
+        var handleChange = event => {
             this.props.items.forEach((item, itemIdx) => {
-                this.props.completeItem(itemIdx);
+                if ( event.target.checked ) {
+                    this.props.completeItem(itemIdx);
+                } else {
+                    this.props.activateItem(itemIdx);
+                }
             });
         };
         return (
@@ -129,6 +133,11 @@ var TodoApp = React.createClass({
         nextItems[itemIdx].done = true;
         this.setState({items: nextItems});
     },
+    activateItem: function (itemIdx) {
+        var nextItems = this.state.items;
+        nextItems[itemIdx].done = false;
+        this.setState({items: nextItems});
+    },
     addItem: function (text) {
         var nextItems = this.state.items;
         nextItems.push({done: false, text: text});
@@ -141,7 +150,8 @@ var TodoApp = React.createClass({
                 <TopBar
                     items={this.state.items}
                     addItem={this.addItem}
-                    completeItem={this.completeItem} />
+                    completeItem={this.completeItem}
+                    activateItem={this.activateItem} />
                 <ItemList
                     items={this.state.items}
                     toggleItem={this.toggleItem} />
