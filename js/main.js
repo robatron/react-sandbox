@@ -19,14 +19,22 @@ var TopBar = React.createClass({
                 return this.props.activateItem(itemIdx);
             });
         };
+        var handleSubmit = event => {
+            event.preventDefault();
+            this.props.addItem(this.refs.newItemBox.value);
+            this.refs.newItemBox.value = null;
+        };
         return (
-            <div>
+            <form onSubmit={handleSubmit}>
                 <input
                     type="checkbox"
                     defaultChecked={false}
                     onChange={handleChange} />
-                <input type="input" placeholder="What needs to be done?"/>
-            </div>
+                <input
+                    type="input"
+                    placeholder="What needs to be done?"
+                    ref="newItemBox" />
+            </form>
         )
     }
 });
@@ -35,6 +43,10 @@ var TopBar = React.createClass({
 
 var ItemList = React.createClass({
     render: function () {
+        var handleDelete = (event, idx) => {
+            event.preventDefault();
+            this.props.removeItem(idx);
+        };
         var itemNodes = this.props.items.map((item, idx) => {
             return (
                 <li key={idx}>
@@ -43,6 +55,12 @@ var ItemList = React.createClass({
                         checked={item.done}
                         onChange={() => this.props.toggleItem(idx)} />
                     <span>{item.text}</span>
+                    <a
+                        href="#"
+                        className="pull-right"
+                        onClick={(event) => handleDelete(event, idx)} >
+                        x
+                    </a>
                 </li>
             );
         });
@@ -124,24 +142,24 @@ var TodoApp = React.createClass({
         this.setState({filter: filter});
     },
     toggleItem: function (itemIdx) {
-        var nextItems = this.state.items;
-        nextItems[itemIdx].done = !this.state.items[itemIdx].done;
-        this.setState({items: nextItems});
+        this.state.items[itemIdx].done = !this.state.items[itemIdx].done;
+        this.setState({items: this.state.items});
     },
     completeItem: function (itemIdx) {
-        var nextItems = this.state.items;
-        nextItems[itemIdx].done = true;
-        this.setState({items: nextItems});
+        this.state.items[itemIdx].done = true;
+        this.setState({items: this.state.items});
     },
     activateItem: function (itemIdx) {
-        var nextItems = this.state.items;
-        nextItems[itemIdx].done = false;
-        this.setState({items: nextItems});
+        this.state.items[itemIdx].done = false;
+        this.setState({items: this.state.items});
     },
     addItem: function (text) {
-        var nextItems = this.state.items;
-        nextItems.push({done: false, text: text});
-        this.setState({items: nextItems});
+        this.state.items.push({done: false, text: text});
+        this.setState({items: this.state.items});
+    },
+    removeItem: function (itemIdx) {
+        this.state.items.splice(itemIdx, 1);
+        this.setState({items: this.state.items});
     },
     render: function () {
         return (
@@ -154,7 +172,8 @@ var TodoApp = React.createClass({
                     activateItem={this.activateItem} />
                 <ItemList
                     items={this.state.items}
-                    toggleItem={this.toggleItem} />
+                    toggleItem={this.toggleItem}
+                    removeItem={this.removeItem} />
                 <BottomBar
                     items={this.state.items}
                     filter={this.state.filter}
