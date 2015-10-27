@@ -9,17 +9,16 @@ const FILTERS = [ 'all', 'active', 'done' ];
 
 // Top bar ---------------------------------------------------------------------
 
-class TopBar extends React.Component {
-    handleSelectAll (event) {
+var TopBar = React.createClass({
+    handleSelectAll: function (event) {
         this.props.items.forEach((item, itemIdx) => {
             if ( event.target.checked ) {
                 return this.props.completeItem(itemIdx);
             }
             return this.props.activateItem(itemIdx);
         });
-    }
-
-    handleSubmit (event) {
+    },
+    handleSubmit: function (event) {
         event.preventDefault();
         var newItemText = this.refs.newItemBox.value.trim();
         if (!newItemText) {
@@ -27,9 +26,8 @@ class TopBar extends React.Component {
         }
         this.props.addItem(newItemText);
         this.refs.newItemBox.value = null;
-    }
-
-    render () {
+    },
+    render: function () {
         return (
             <form onSubmit={this.handleSubmit}>
                 <input
@@ -43,33 +41,42 @@ class TopBar extends React.Component {
             </form>
         )
     }
-}
+});
 
 // Items -----------------------------------------------------------------------
 
 var ItemList = React.createClass({
+    handleDelete: function (event, idx) {
+        event.preventDefault();
+        this.props.removeItem(idx);
+    },
     render: function () {
-        var handleDelete = (event, idx) => {
-            event.preventDefault();
-            this.props.removeItem(idx);
-        };
-        var itemNodes = this.props.items.map((item, idx) => {
-            return (
-                <li key={idx}>
-                    <input
-                        type="checkbox"
-                        checked={item.done}
-                        onChange={() => this.props.toggleItem(idx)} />
-                    <span>{item.text}</span>
-                    <a
-                        href="#"
-                        className="pull-right"
-                        onClick={(event) => handleDelete(event, idx)} >
-                        x
-                    </a>
-                </li>
+        var itemNodes =
+            _.map(
+                _.filter( this.props.items, (item) => {
+                    if (this.props.filter === 'active') {
+                        return !item.done;
+                    }
+                    if (this.props.filter === 'done') {
+                        return item.done;
+                    }
+                    return true;
+                }),
+                (item, idx) => { return (
+                    <li key={idx}>
+                        <input
+                            type="checkbox"
+                            checked={item.done}
+                            onChange={() => this.props.toggleItem(idx)} />
+                        <span>{item.text}</span>
+                        <a
+                            href="#"
+                            onClick={(event) => this.handleDelete(event, idx)} >
+                            [x]
+                        </a>
+                    </li>
+                )}
             );
-        });
         return (
             <ul>
                 {itemNodes}
@@ -111,7 +118,8 @@ var Filters = React.createClass({
 
 var ClearCompletedButton = React.createClass({
     render: function () {
-        var areCompletedItems = !!_.filter(this.props.items, item => item.done).length;
+        var areCompletedItems =
+            !!_.filter(this.props.items, item => item.done).length;
         return (
             <button
                 className={areCompletedItems ? '' : 'hidden'}>
@@ -187,6 +195,7 @@ var TodoApp = React.createClass({
                     completeItem={this.completeItem}
                     activateItem={this.activateItem} />
                 <ItemList
+                    filter={this.state.filter}
                     items={this.state.items}
                     toggleItem={this.toggleItem}
                     removeItem={this.removeItem} />
