@@ -117,12 +117,20 @@ var Filters = React.createClass({
 });
 
 var ClearCompletedButton = React.createClass({
+    getCompletedItems: function () {
+        return _.filter( this.props.items, item => item.done );
+    },
+    clearCompleted: function (event) {
+        return _.each(
+            this.getCompletedItems(),
+            (item, itemIdx) => this.props.removeItem(itemIdx)
+        )
+    },
     render: function () {
-        var areCompletedItems =
-            !!_.filter(this.props.items, item => item.done).length;
         return (
             <button
-                className={areCompletedItems ? '' : 'hidden'}>
+                className={!!this.getCompletedItems().length ? '' : 'hidden'}
+                onClick={this.clearCompleted}>
                 Clear completed
             </button>
         );
@@ -138,7 +146,8 @@ var BottomBar = React.createClass({
                     filter={this.props.filter}
                     setFilter={this.props.setFilter} />
                 <ClearCompletedButton
-                    items={this.props.items} />
+                    items={this.props.items}
+                    removeItem={this.props.removeItem} />
             </div>
         )
     }

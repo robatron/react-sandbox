@@ -35,7 +35,7 @@ gulp.task( 'jsc:packages', () => {
         .pipe( source( JS_PACK_FILENAME ) )
         .pipe( buffer() )
         .pipe( sourcemaps.init( { loadMaps: true } ) )
-        .pipe( uglify() )
+        //.pipe( uglify() )
         .on( 'error', gutil.log )
         .pipe( sourcemaps.write( './' ) )
         .pipe( gulp.dest( BUILD_DIR ) );
@@ -66,7 +66,7 @@ gulp.task( 'jsc:main', () => {
             .pipe( source( path.basename( SRC_FILE ) ) )
             .pipe( buffer() )
             .pipe( sourcemaps.init( { loadMaps: true } ) )
-            .pipe( uglify() )
+            //.pipe( uglify() )
             .on( 'error', gutil.log )
             .pipe( sourcemaps.write( './' ) )
             .pipe( gulp.dest( BUILD_DIR ) );
