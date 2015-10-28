@@ -117,20 +117,11 @@ var Filters = React.createClass({
 });
 
 var ClearCompletedButton = React.createClass({
-    getCompletedItems: function () {
-        return _.filter( this.props.items, item => item.done );
-    },
-    clearCompleted: function (event) {
-        return _.each(
-            this.getCompletedItems(),
-            (item, itemIdx) => this.props.removeItem(itemIdx)
-        )
-    },
     render: function () {
         return (
             <button
-                className={!!this.getCompletedItems().length ? '' : 'hidden'}
-                onClick={this.clearCompleted}>
+                className={!!_.filter( this.props.items, item => item.done ).length ? '' : 'hidden'}
+                onClick={this.props.removeCompletedItems}>
                 Clear completed
             </button>
         );
@@ -147,7 +138,7 @@ var BottomBar = React.createClass({
                     setFilter={this.props.setFilter} />
                 <ClearCompletedButton
                     items={this.props.items}
-                    removeItem={this.props.removeItem} />
+                    removeCompletedItems={this.props.removeCompletedItems} />
             </div>
         )
     }
@@ -194,6 +185,9 @@ var TodoApp = React.createClass({
         this.state.items.splice(itemIdx, 1);
         this.setState({items: this.state.items});
     },
+    removeCompletedItems: function () {
+        this.setState({items: _.filter(this.state.items, item => !item.done)});
+    },
     render: function () {
         return (
             <div>
@@ -212,7 +206,7 @@ var TodoApp = React.createClass({
                     items={this.state.items}
                     filter={this.state.filter}
                     setFilter={this.setFilter}
-                    removeItem={this.removeItem} />
+                    removeCompletedItems={this.removeCompletedItems} />
             </div>
         )
     }
